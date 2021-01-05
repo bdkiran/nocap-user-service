@@ -18,7 +18,6 @@ const jwtOptions = {
 passport.use(new passportJWT.Strategy(jwtOptions,
     async (payload, done) => {
         let user = await users.getUserFromDb(payload.sub);
-        console.log(user)
         //error check??
         if (!user) {
             return done(null, false);

@@ -4,6 +4,8 @@ var cors = require('cors')
 const dotenv = require('dotenv');
 const token = require("./src/token")
 
+const userPersist = require('./src/persistUsers')
+
 //Load in environment variables
 dotenv.config()
 require("./src/authProviders/google");
@@ -31,7 +33,7 @@ const generateUserToken = (req, res) => {
 //Authentication path
 app.get('/auth/google',
     passport.authenticate('google',
-        { session: false, scope: ["profile"] })
+        { session: false, scope: ['email', 'profile'] })
 );
 //Redirect path
 app.get('/auth/google/redir',
@@ -71,6 +73,32 @@ app.get('/bootstrap',
     }
 );
 
+//CHeck if token matches the id query parameter
+app.delete('/user/:id',
+    passport.authenticate(['jwt'], {session: false}),
+    async (req, res) => {
+        if(req.params.id === req.user.user_id) {
+            const dbres = await userPersist.deleteUserFromDB(req.user.user_id)
+            if (dbres) {
+                let response = {
+                    data: {
+                        message: "Successfully Deleted user"
+                    }
+                }
+                res.send(response)
+                return
+            }
+        }
+        let response = {
+            error: {
+                message: "Unable to delete user"
+            }
+        }
+        res.status(400)
+        res.send(response)
+    }
+)
+
 /* TEST ROUTES */
 //Service status
 app.get('/', (req, res) => {
@@ -89,6 +117,6 @@ app.get('/api/secure',
     }
 );
 
-app.listen(port, () => {
+app.listen(port, async () => {
     console.log(`Authentication Server is runinng on at http://localhost:${port}`);
 });

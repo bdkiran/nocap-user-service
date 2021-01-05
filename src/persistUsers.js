@@ -5,7 +5,7 @@ const pool = new Pool()
 
 //Retrieves a user from the database
 const getUserFromDb = async(userID) => {
-    const selectSQLStatement = 'SELECT * FROM users where user_id=$1;';
+    const selectSQLStatement = 'SELECT user_id, firstname, lastname, email FROM users where user_id=$1;';
     const values = [userID];
     try {
         const res = await pool.query(selectSQLStatement, values)
@@ -29,8 +29,8 @@ const updateUserLastLogin = async(userID) => {
 }
 
 const createGoogleUser = async(userProfile) => {
-    const insertSQLStatement = 'INSERT INTO users(user_id, firstname, lastname, auth_type) VALUES ($1, $2, $3, $4) RETURNING *;'
-    const values = [userProfile.id, userProfile.name.givenName, userProfile.name.familyName, 'google'];
+    const insertSQLStatement = 'INSERT INTO users(user_id, firstname, lastname, email, auth_type) VALUES ($1, $2, $3, $4, $5) RETURNING *;'
+    const values = [userProfile.id, userProfile._json.given_name, userProfile._json.family_name, userProfile._json.email, 'google'];
     try {
         const res = await pool.query(insertSQLStatement, values);
         return res.rows[0];
@@ -40,6 +40,24 @@ const createGoogleUser = async(userProfile) => {
     }
 }
 
+const deleteUserFromDB = async(userID) => {
+    const deleteSQLStatement = `DELETE FROM users where user_id=$1;`;
+    const values = [BigInt(userID)];
+    try {
+        const res = await pool.query(deleteSQLStatement, values);
+        console.log(res)
+        //If id doesn't exist, will return true.
+        //Not sure if this is intended api useage.
+        if (res.rowCount === 0) {
+            return false;
+        }
+        return true;
+    } catch(err) {
+        console.log(err.stack)
+        return false;
+    }
+}
+
 module.exports = {
-    getUserFromDb, createGoogleUser
+    getUserFromDb, createGoogleUser, deleteUserFromDB
 }
