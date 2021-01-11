@@ -45,7 +45,6 @@ const deleteUserFromDB = async(userID) => {
     const values = [BigInt(userID)];
     try {
         const res = await pool.query(deleteSQLStatement, values);
-        console.log(res)
         //If id doesn't exist, will return true.
         //Not sure if this is intended api useage.
         if (res.rowCount === 0) {

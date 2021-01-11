@@ -63,7 +63,6 @@ app.get('/auth/google/redir',
 app.get('/bootstrap',
     passport.authenticate(['jwt'], {session: false}),
     (req, res) => {
-        console.log('bootstrap called');
         let accessToken = token.generateAccessToken(req.user.user_id);
         let response = {
             data: req.user,

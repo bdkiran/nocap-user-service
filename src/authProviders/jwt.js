@@ -9,11 +9,6 @@ const jwtOptions = {
     //issuer: 'auth-service',
 }
 
-// var opts = {}
-// opts.jwtFromRequest = passportJWT.ExtractJwt.fromAuthHeaderAsBearerToken();
-// opts.secretOrKey = 'mySecret';
-// //opts.issuer = 'accounts.examplesoft.com';
-// opts.audience = 'nocaplyrics.com';
 
 passport.use(new passportJWT.Strategy(jwtOptions,
     async (payload, done) => {
