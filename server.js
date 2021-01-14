@@ -22,12 +22,14 @@ app.use(passport.initialize());
 app.use(cors());
 const port = 8080;
 
+const 
+
 const generateUserToken = (req, res) => {
     const accessToken = token.generateAccessToken(req.user.user_id);
     //How do we want to send this back to the user?
     //Is the cookie the best way of doing this?
     res.cookie('nocap_idToken', accessToken, {maxAge: 5000})
-    res.redirect('http://localhost')
+    res.redirect(process.env.REDIRECT_URL)
 }
 
 //Authentication path
@@ -39,7 +41,7 @@ app.get('/google',
 app.get('/google/redir',
     passport.authenticate('google', {
         session: false,
-        failureRedirect: 'http://localhost/login',
+        failureRedirect: `${process.env.REDIRECT_URL}/login`,
      }),
     generateUserToken
 );
@@ -107,14 +109,6 @@ app.get('/', (req, res) => {
     }
     res.send(response)
 })
-
-//protected route
-app.get('/api/secure',
-    passport.authenticate(['jwt'], {session: false}),
-    (req, res) => {
-        res.send("Secure response from " + JSON.stringify(req.user));
-    }
-);
 
 app.listen(port, async () => {
     console.log(`Authentication Server is runinng on at http://localhost:${port}`);
