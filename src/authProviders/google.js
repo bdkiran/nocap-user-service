@@ -9,7 +9,7 @@ passport.use(new googleStrategy({
     callbackURL: '/auth/google/redir'
 },
     async (accessToken, refreshToken, profile, done) => {
-        let user = await users.getUserFromDb(profile.id);
+        let user = await users.getSocialUserFromDb(profile.id, "google");
         if (!user) {
             user = await users.createGoogleUser(profile)
         }

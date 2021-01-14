@@ -20,26 +20,26 @@ app.use(passport.initialize());
 //     optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
 //   }
 app.use(cors());
-const port = 8001;
+const port = 8080;
 
 const generateUserToken = (req, res) => {
     const accessToken = token.generateAccessToken(req.user.user_id);
     //How do we want to send this back to the user?
     //Is the cookie the best way of doing this?
-    res.cookie('id_token', accessToken, {maxAge: 10000})
-    res.redirect('http://localhost:3000')
+    res.cookie('nocap_idToken', accessToken, {maxAge: 5000})
+    res.redirect('http://localhost')
 }
 
 //Authentication path
-app.get('/auth/google',
+app.get('/google',
     passport.authenticate('google',
         { session: false, scope: ['email', 'profile'] })
 );
 //Redirect path
-app.get('/auth/google/redir',
+app.get('/google/redir',
     passport.authenticate('google', {
         session: false,
-        failureRedirect: 'http://localhost:3000/login',
+        failureRedirect: 'http://localhost/login',
      }),
     generateUserToken
 );
