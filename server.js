@@ -4,6 +4,8 @@ var cors = require('cors')
 const dotenv = require('dotenv');
 const token = require("./src/token")
 
+const userPersist = require('./src/persistUsers')
+
 //Load in environment variables
 dotenv.config()
 require("./src/authProviders/google");
@@ -18,26 +20,28 @@ app.use(passport.initialize());
 //     optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
 //   }
 app.use(cors());
-const port = 8001;
+const port = 8080;
+
+const 
 
 const generateUserToken = (req, res) => {
     const accessToken = token.generateAccessToken(req.user.user_id);
     //How do we want to send this back to the user?
     //Is the cookie the best way of doing this?
-    res.cookie('id_token', accessToken, {maxAge: 10000})
-    res.redirect('http://localhost:3000')
+    res.cookie('nocap_idToken', accessToken, {maxAge: 5000})
+    res.redirect(process.env.REDIRECT_URL)
 }
 
 //Authentication path
-app.get('/auth/google',
+app.get('/google',
     passport.authenticate('google',
-        { session: false, scope: ["profile"] })
+        { session: false, scope: ['email', 'profile'] })
 );
 //Redirect path
-app.get('/auth/google/redir',
+app.get('/google/redir',
     passport.authenticate('google', {
         session: false,
-        failureRedirect: 'http://localhost:3000/login',
+        failureRedirect: `${process.env.REDIRECT_URL}/login`,
      }),
     generateUserToken
 );
@@ -61,7 +65,6 @@ app.get('/auth/google/redir',
 app.get('/bootstrap',
     passport.authenticate(['jwt'], {session: false}),
     (req, res) => {
-        console.log('bootstrap called');
         let accessToken = token.generateAccessToken(req.user.user_id);
         let response = {
             data: req.user,
@@ -70,6 +73,32 @@ app.get('/bootstrap',
         res.send(response)
     }
 );
+
+//CHeck if token matches the id query parameter
+app.delete('/user/:id',
+    passport.authenticate(['jwt'], {session: false}),
+    async (req, res) => {
+        if(req.params.id === req.user.user_id) {
+            const dbres = await userPersist.deleteUserFromDB(req.user.user_id)
+            if (dbres) {
+                let response = {
+                    data: {
+                        message: "Successfully Deleted user"
+                    }
+                }
+                res.send(response)
+                return
+            }
+        }
+        let response = {
+            error: {
+                message: "Unable to delete user"
+            }
+        }
+        res.status(400)
+        res.send(response)
+    }
+)
 
 /* TEST ROUTES */
 //Service status
@@ -81,14 +110,6 @@ app.get('/', (req, res) => {
     res.send(response)
 })
 
-//protected route
-app.get('/api/secure',
-    passport.authenticate(['jwt'], {session: false}),
-    (req, res) => {
-        res.send("Secure response from " + JSON.stringify(req.user));
-    }
-);
-
-app.listen(port, () => {
+app.listen(port, async () => {
     console.log(`Authentication Server is runinng on at http://localhost:${port}`);
 });

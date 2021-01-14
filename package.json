@@ -4,6 +4,7 @@
   "description": "Authentication Service for NoCap",
   "main": "server.js",
   "scripts": {
+    "state": "node serve.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "datadawgbk",
