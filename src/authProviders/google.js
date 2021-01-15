@@ -6,7 +6,7 @@ const users = require('../persistUsers');
 passport.use(new googleStrategy({
     clientID: process.env.CLIENT_ID,
     clientSecret: process.env.CLIENT_SECRET,
-    callbackURL: '/auth/google/redir'
+    callbackURL: `${process.env.REDIRECT_URL}/auth/google/redir`
 },
     async (accessToken, refreshToken, profile, done) => {
         let user = await users.getSocialUserFromDb(profile.id, "google");

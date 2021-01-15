@@ -22,8 +22,6 @@ app.use(passport.initialize());
 app.use(cors());
 const port = 8080;
 
-const 
-
 const generateUserToken = (req, res) => {
     const accessToken = token.generateAccessToken(req.user.user_id);
     //How do we want to send this back to the user?
